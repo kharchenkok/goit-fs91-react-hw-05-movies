@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getMovieCast } from '../../services/fetchMovies';
 import { showError } from '../../utils/ToastNotification';
+import CastList from './CastList.jsx';
 
 const Cast = () => {
   const [movieCast, setMovieCast] = useState([]);
@@ -20,22 +21,13 @@ const Cast = () => {
   }, [movieId]);
 
   return (
-    <div>
-      <ul>
-        {movieCast.map(({ id, name, profile_path }) => (
-          <li key={id}>
-            <div>
-              <img
-                src={`https://image.tmdb.org/t/p/original/${profile_path}`}
-                alt={name}
-                width="250"
-              />
-              <h2>{name}</h2>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      {movieCast && movieCast.length > 0 ? (
+        <CastList movieCast={movieCast} />
+      ) : (
+        <p> No information about casts</p>
+      )}
+    </>
   );
 };
 

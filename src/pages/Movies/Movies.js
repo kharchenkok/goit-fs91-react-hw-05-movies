@@ -1,74 +1,52 @@
-import { useCallback, useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { getSearchMovies } from '../../services/fetchMovies';
 import { showError } from '../../utils/ToastNotification';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import Searchbar from '../../components/Searchbar';
+import MoviesList from '../../components/MoviesList';
+import { Section } from '../../components/Layout/Layout.styled';
 
 const Movies = () => {
   const [movies, setMovies] = useState([]);
   const location = useLocation();
-  // const [searchParams, setSearchParams] = useSearchParams();
-  // const userSearch = searchParams.get('query') || '';
-
   const [searchParams, setSearchParams] = useSearchParams();
-  const [userSearch, setUserSearch] = useState(searchParams.get('query') || '');
+  const userSearch = searchParams.get('search') || '';
 
-  // const updateSearchString = event => {
-  //   const { value } = event.target;
-  //   if (value === '') return setSearchParams({});
-  //
-  //   setSearchParams({ query: value });
-  // };
-
-  const updateSearchString = event => {
-    const { value } = event.target;
-    // if (value === '') return setSearchParams({});
-    setUserSearch(value);
-  };
-
-  const handleFormSubmit = event => {
-    event.preventDefault();
-
-    fetchSearchMovies();
-  };
-  const fetchSearchMovies = useCallback(() => {
-    getSearchMovies(userSearch)
+  const fetchSearchMovies = useCallback(query => {
+    getSearchMovies(query)
       .then(({ results }) => {
-        console.log('data', results);
         setMovies(results);
       })
       .catch(error => showError(error.message));
-  }, [userSearch]);
+  }, []);
 
   useEffect(() => {
     if (userSearch === '') return setMovies([]);
-    fetchSearchMovies();
-  }, [fetchSearchMovies]);
+
+    fetchSearchMovies(userSearch);
+  }, [fetchSearchMovies, userSearch]);
+
+  const handleFormSubmit = userInput => {
+    const query = userInput.trim();
+    if (query === '') {
+      setSearchParams({});
+    } else {
+      setSearchParams({ search: query });
+      fetchSearchMovies(query);
+    }
+  };
 
   return (
-    <div>
-      Movies
-      <form onSubmit={handleFormSubmit}>
-        <input type={'text'} value={userSearch} onChange={updateSearchString} />
-        <button type="submit">Search</button>
-      </form>
-      <ul>
-        {movies.map(({ id, title, release_date, poster_path }) => (
-          <li key={id}>
-            <Link to={`/movies/${id}`} state={{ from: location }}>
-              <div>
-                <img
-                  src={`https://image.tmdb.org/t/p/original/${poster_path}`}
-                  alt={title}
-                  width="250"
-                />
-                <h2>{title}</h2>
-                <p>Release date:{release_date}</p>
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Section>
+      <Searchbar
+        onFormSubmit={handleFormSubmit}
+        defaultSearchValue={userSearch}
+      />
+
+      {movies && movies.length > 0 && (
+        <MoviesList movies={movies} location={location} />
+      )}
+    </Section>
   );
 };
 

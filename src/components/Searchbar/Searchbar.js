@@ -1,41 +1,35 @@
-import React, { useState } from 'react';
-import { BsSearch } from 'react-icons/bs';
-import styles from './Searchbar.module.css';
-const Searchbar = ({ onSubmit }) => {
-  const [query, setQuery] = useState('');
+import React, { useState, useEffect } from 'react';
+import { SearchForm, SearchInput } from './Searchbar.styled';
+import ButtonSearch from '../Buttons/ButtonSearch';
 
-  const handleSubmit = event => {
-    event.preventDefault();
-    onSubmit(query);
+const Searchbar = ({ onFormSubmit, defaultSearchValue }) => {
+  const [userInput, setUserInput] = useState(defaultSearchValue || '');
+
+  useEffect(() => {
+    setUserInput(defaultSearchValue || '');
+  }, [defaultSearchValue]);
+
+  const updateSearchString = event => {
+    const { value } = event.target;
+    setUserInput(value);
   };
 
-  const handleChange = event => {
-    setQuery(event.target.value.trim());
+  const handleFormSubmit = event => {
+    event.preventDefault();
+    onFormSubmit(userInput.trim());
   };
 
   return (
-    <header className={styles.Searchbar} onSubmit={handleSubmit}>
-      <form className={styles.SearchForm}>
-        <input
-          className={styles.SearchFormInput}
-          type="text"
-          name="query"
-          autoComplete="off"
-          autoFocus
-          placeholder="Search images and photos"
-          value={query}
-          onChange={handleChange}
-        />
-        <button
-          type="submit"
-          disabled={!query}
-          className={styles.SearchFormButton}
-        >
-          <BsSearch />
-          <span className={styles.SearchFormButtonLabel}>Search</span>
-        </button>
-      </form>
-    </header>
+    <SearchForm onSubmit={handleFormSubmit}>
+      <SearchInput
+        type={'text'}
+        value={userInput}
+        name="query"
+        onChange={updateSearchString}
+        placeholder="Search movies..."
+      />
+      <ButtonSearch type="submit">Search</ButtonSearch>
+    </SearchForm>
   );
 };
 
